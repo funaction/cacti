@@ -1,0 +1,16 @@
+Package: cacti
+Title: CACTI requests and preparation of their results
+Version: 1.0
+Authors@R: 
+    person("Daniel", "Romero-Mujalli", , "daniel.romero@supsi.ch", role = c("aut", "cre"),
+           comment = c(ORCID = "https://orcid.org/0000-0002-7824-8706"))
+Author: Daniel Romero-Mujalli [aut, cre]
+Maintainer: Daniel Romero-Mujalli <daniel.romero@supsi.ch>
+Description: The package is intended to facilitate (i) the creation of requests for chemical analyses at the Servicios de Seguridad Alimentaria y Desarrollo Sostenible del Centro de Apoyo Cientifico Tecnologico a la Investigacion (C.A.C.T.I) de la Universidad de Vigo; and (ii) the cleaning and preparation of the results so that they are ready to use as an R dataframe.
+License: `use_mit_license()`
+URL: https://github.com/funaction/cacti
+BugReports: https://github.com/funaction/cacti/issues
+Encoding: UTF-8
+Imports: readxl (>= 1.4.3)
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
