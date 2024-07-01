@@ -33,3 +33,6 @@ foo <- x[order(x$siteID),]
 foo <- cbind(x, chem[,c(4:dim(chem)[2])])
 
 x <- foo
+
+### create cacti request
+?cacti::crt_cacti_request
