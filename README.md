@@ -14,12 +14,12 @@ type on R console
 
 ## USAGE
 (NOT RUN)
-# read chemistry data
+### read chemistry data
 datapath <- "chemistry/cacti_data/"
 filename <- list.files(datapath, pattern = "Portugal")
 chem <- cacti::read_cacti(filename = filename, path = datapath)
 
-# bind chemistry with funaction data
+### bind chemistry with funaction data
 selection <- unique(x$siteID[x$siteID %in% cacti::get_siteID(chem)])
 x <- x[x$siteID %in% selection,]
 foo <- x[order(x$siteID),]
