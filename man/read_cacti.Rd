@@ -4,13 +4,16 @@
 \alias{read_cacti}
 \title{read_cacti}
 \usage{
-read_cacti(filename, path = "")
+read_cacti(filename, path = "", show_units = FALSE)
 }
 \arguments{
 \item{filename}{the original *.xlsx cacti data}
 
 \item{path}{path to filename
-DEFAULT "" current directory
+DEFAULT "" current directory}
+
+\item{show_units}{show measurement units along variable names
+DEFAULT FALSE
 
 OUTPUT}
 }
