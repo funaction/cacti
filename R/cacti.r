@@ -114,12 +114,16 @@ crt_cacti_request <- function(funaction_df
 #' @param path path to filename
 #' DEFAULT "" current directory
 #'
+#' @param show_units show measurement units along variable names
+#' DEFAULT FALSE
+#'
 #' OUTPUT
 #' @return dataframe, cleaned cacti data
 #'
 #' @export
 read_cacti <- function(filename
                       ,path = ""
+                      ,show_units = FALSE
                       )
 {
     # CACTI data has the chemistry results on sheets 2 and 3 of
@@ -131,12 +135,16 @@ read_cacti <- function(filename
                                ,sheet = sheet
                                ,skip  = 1 # skip first row
                                )
+        # if requested,
         # to each nutrient name, append the corresponding unit 
         # (e.g., Ca++(mg/l))
-        currentnames <- names(x)[3:dim(x)[2]]
+        newnames <- names(x)[3:dim(x)[2]]
         # vector of units
-        units <- x[2,-c(1,2)]
-        newnames <- paste0(currentnames,"(",units,")")
+        if(show_units){
+            units <- x[2,-c(1,2)]
+            newnames <- paste0(newnames,"(",units,")")
+        }
+        
         names(x)[3:dim(x)[2]] <- newnames
         
         if(sheet < 3)
