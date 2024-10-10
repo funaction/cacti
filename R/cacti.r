@@ -53,7 +53,7 @@ crt_cacti_request <- function(funaction_df
                              )
 {
     # select the samples in need of chemistry analysis
-    id <- unique(funaction_df$siteID[funaction_df$Country == country])
+    id <- unique(funaction_df$USID[funaction_df$Country == country])
 
     # remove samples that have already been processed by cacti
     if(!is.null(dim(cacti_data))) 
