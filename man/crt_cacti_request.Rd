@@ -11,8 +11,7 @@ crt_cacti_request(
   volume = 40,
   tag_unfiltered = "_C1",
   tag_filtered = "_C2",
-  filename = "cacti_request.csv",
-  outdir = getwd()
+  outfname = "cacti_request.csv"
 )
 }
 \arguments{
@@ -32,9 +31,7 @@ Default "_C1"}
 \item{tag_filtered}{tag used to identify filtered samples
 Default "_C2"}
 
-\item{filename}{name of the output file}
-
-\item{outdir}{directory path where to store the file
+\item{outfname}{name of the output file (path/filename)
 
 OUTPUT}
 }

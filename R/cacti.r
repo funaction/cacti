@@ -37,9 +37,7 @@
 #' @param tag_filtered tag used to identify filtered samples
 #' Default "_C2"
 #'
-#' @param filename name of the output file
-#'
-#' @param outdir directory path where to store the file
+#' @param outfname name of the output file (path/filename)
 #'
 #' OUTPUT
 #' @return message with filepath and filename
@@ -51,8 +49,7 @@ crt_cacti_request <- function(funaction_df
                              ,volume = 40
                              ,tag_unfiltered = "_C1"
                              ,tag_filtered   = "_C2"
-                             ,filename = "cacti_request.csv"
-                             ,outdir = getwd()
+                             ,outfname = "cacti_request.csv"
                              )
 {
     # select the samples in need of chemistry analysis
@@ -92,14 +89,9 @@ crt_cacti_request <- function(funaction_df
               ,"analysis_to_perform")
 
     # save df to file
-    write.csv(x = df, file = file.path(outdir,filename)
-             ,quote = FALSE, row.names = FALSE
-             )
+    write.csv(x = df, file = outfname,quote = FALSE, row.names = FALSE)
     # print filepath and filename
-    writeLines(c(paste0("filename, cacti request: ",filename)
-                ,paste0("stored at: ",outdir,"/")
-                )
-              )
+    writeLines(c(paste0("filename, cacti request: ",outfname)))
 
 }
 ###############################################################
@@ -109,10 +101,7 @@ crt_cacti_request <- function(funaction_df
 #' read, prepare and clean cacti data
 #'
 #' PARAMETERS
-#' @param filename the original *.xlsx cacti data
-#'
-#' @param path path to filename
-#' DEFAULT "" current directory
+#' @param fname the original path/filename *.xlsx cacti data
 #'
 #' @param show_units show measurement units along variable names
 #' DEFAULT FALSE
@@ -122,7 +111,6 @@ crt_cacti_request <- function(funaction_df
 #'
 #' @export
 read_cacti <- function(filename
-                      ,path = ""
                       ,show_units = FALSE
                       )
 {
@@ -131,7 +119,7 @@ read_cacti <- function(filename
     for(sheet in c(2:3))
     {
         # using read_excel method from readxl package
-        x <- readxl::read_excel(path  = paste0(path,filename)
+        x <- readxl::read_excel(path  = fname
                                ,sheet = sheet
                                ,skip  = 1 # skip first row
                                )
