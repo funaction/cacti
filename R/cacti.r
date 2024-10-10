@@ -168,6 +168,15 @@ read_cacti <- function(filename
                                       ,FUN = as.numeric
                                       )
                                )
+    # remove punctuation characters and spaces from variable names
+    names(df) <- gsub(pattern = " ", replacement = ""
+                     ,x = names(df)
+                     )
+    names(df) <- gsub(pattern = "[[:punct:]]"
+                     ,replacement = ""
+                     ,x = names(df)
+                     )
+    
     # return prepared cacti data frame
      return(df)
 }
