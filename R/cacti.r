@@ -110,7 +110,7 @@ crt_cacti_request <- function(funaction_df
 #' @return dataframe, cleaned cacti data
 #'
 #' @export
-read_cacti <- function(filename
+read_cacti <- function(fname
                       ,show_units = FALSE
                       )
 {
