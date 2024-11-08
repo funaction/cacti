@@ -1,11 +1,11 @@
 # cacti
 r functions to facilitate the creation of CACTI requests and the preparation of their results
 
-author: Daniel Romero-Mujalli
+author: Daniel Romero-Mujalli<br>
 email:  daniel.romero@supsi.ch
 
 ## Installation
-(requires devtools)
+(requires devtools)<br>
 type on R console
 > devtools::install_github("funaction/cacti")
 
