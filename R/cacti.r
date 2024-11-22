@@ -116,6 +116,8 @@ read_cacti <- function(fname
 {
     # CACTI data has the chemistry results on sheets 2 and 3 of
     # the excel file
+    if(show_units)
+      units <- vector()
     for(sheet in c(2:3))
     {
         # using read_excel method from readxl package
@@ -129,7 +131,7 @@ read_cacti <- function(fname
         newnames <- names(x)[3:dim(x)[2]]
         # vector of units
         if(show_units){
-            units <- x[2,-c(1,2)]
+            units <- c(units,x[2,-c(1,2)])
             #newnames <- paste0(newnames,"(",units,")")
         }
         
