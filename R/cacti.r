@@ -130,7 +130,7 @@ read_cacti <- function(fname
         # vector of units
         if(show_units){
             units <- x[2,-c(1,2)]
-            newnames <- paste0(newnames,"(",units,")")
+            #newnames <- paste0(newnames,"(",units,")")
         }
         
         names(x)[3:dim(x)[2]] <- newnames
@@ -167,7 +167,18 @@ read_cacti <- function(fname
     # adjust phosphates names
     names(df) <- sub(pattern = "Fosfatos", replacement = "", x = names(df))
     names(df) <- sub(pattern = "Ptotal",    replacement = "TP", x = names(df))
-  
+
+    # show units along the names
+    if(show_units)
+      names(df)[-c(1:3)] <- paste0(names(df)[-c(1:3)],"(",units,")")
+
+    # remove un/filtered tag from site ID and order data rows by id
+    # then, change "Muestra" colname by "USID" to match the identifier
+    # used in kobo
+    df$Muestra <- get_siteID(df)
+    df <- df[order(df$Muestra),]
+    names(df)[1] <- "USID"
+    
     # return prepared cacti data frame
      return(df)
 }
