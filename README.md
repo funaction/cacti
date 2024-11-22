@@ -24,15 +24,15 @@ type on R console
 
 ### bind chemistry with funaction data<br>
 ### assuming that x is the kobo dataframe:
->selection <- unique(x$USID[x$USID %in% cacti::get_siteID(chem)])
+>selection <- unique(x$USID[x$USID %in% chem$USID])
 
 >foo <- x[x$USID %in% selection,]
 
-### grant that the site Ids (USID) in foo and chem follow the same order
+### grant that site Ids (USID) in foo and chem follow the same order
 >foo  <- foo[order(foo$USID),]
->chem <- chem[order(cacti::get_siteID(chem)),]
-
->foo <- cbind(x, chem[,c(4:dim(chem)[2])])
+>sum(foo$USID != chem$USID) # should be zero
+### bind chemistry to kobo data
+>foo <- cbind(foo, chem[,c(4:dim(chem)[2])])
 
 >x <- foo
 
