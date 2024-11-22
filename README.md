@@ -16,23 +16,25 @@ type on R console
 (NOT RUN)
 ### read chemistry data
 
-datapath <- "chemistry/cacti_data/"
+>datapath <- "chemistry/cacti_data"
 
-filename <- list.files(datapath, pattern = "Portugal")
+>filename <- list.files(datapath, pattern = "Portugal", full.names = TRUE)
 
-chem <- cacti::read_cacti(filename = filename, path = datapath)
+>chem <- cacti::read_cacti(filename = filename)
 
-### bind chemistry with funaction data
+### bind chemistry with funaction data<br>
+### assuming that x is the kobo dataframe:
+>selection <- unique(x$USID[x$USID %in% cacti::get_siteID(chem)])
 
-selection <- unique(x$siteID[x$siteID %in% cacti::get_siteID(chem)])
+>foo <- x[x$USID %in% selection,]
 
-x <- x[x$siteID %in% selection,]
+### grant that the site Ids (USID) in foo and chem follow the same order
+>foo  <- foo[order(foo$USID),]
+>chem <- chem[order(cacti::get_siteID(chem)),]
 
-foo <- x[order(x$siteID),]
+>foo <- cbind(x, chem[,c(4:dim(chem)[2])])
 
-foo <- cbind(x, chem[,c(4:dim(chem)[2])])
-
-x <- foo
+>x <- foo
 
 ### create cacti request
-?cacti::crt_cacti_request
+>?cacti::crt_cacti_request
