@@ -164,7 +164,10 @@ read_cacti <- function(fname
                      ,replacement = ""
                      ,x = names(df)
                      )
-    
+    # adjust phosphates names
+    names(df) <- sub(pattern = "Fosfatos", replacement = "", x = names(df))
+    names(df) <- sub(pattern = "Ptotal",    replacement = "TP", x = names(df))
+  
     # return prepared cacti data frame
      return(df)
 }
