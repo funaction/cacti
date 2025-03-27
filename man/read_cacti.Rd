@@ -4,15 +4,22 @@
 \alias{read_cacti}
 \title{read_cacti}
 \usage{
-read_cacti(filename, show_units = FALSE)
+read_cacti(fname, show_units = FALSE, lines_to_skip = 1, sheets = c(2, 3))
 }
 \arguments{
+\item{fname}{the original path/filename *.xlsx cacti data}
+
 \item{show_units}{show measurement units along variable names
-DEFAULT FALSE
+DEFAULT FALSE}
+
+\item{lines_to_skip}{skip this many lines when reading the
+file
+DEFAULT 1}
+
+\item{sheets}{from which sheets to read
+DEFAULT c(2,3)
 
 OUTPUT}
-
-\item{fname}{the original path/filename *.xlsx cacti data}
 }
 \value{
 dataframe, cleaned cacti data

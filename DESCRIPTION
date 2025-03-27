@@ -13,4 +13,4 @@ BugReports: https://github.com/funaction/cacti/issues
 Encoding: UTF-8
 Imports: readxl (>= 1.4.3)
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2

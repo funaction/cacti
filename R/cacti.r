@@ -106,83 +106,140 @@ crt_cacti_request <- function(funaction_df
 #' @param show_units show measurement units along variable names
 #' DEFAULT FALSE
 #'
+#' @param lines_to_skip skip this many lines when reading the 
+#' file
+#' DEFAULT 1
+#'
+#' @param sheets from which sheets to read
+#' DEFAULT c(2,3)
+#'
 #' OUTPUT
 #' @return dataframe, cleaned cacti data
 #'
 #' @export
 read_cacti <- function(fname
                       ,show_units = FALSE
+                      ,lines_to_skip = 1
+                      ,sheets = c(2,3)
                       )
 {
     # CACTI data has the chemistry results on sheets 2 and 3 of
     # the excel file
-    if(show_units)
-      units <- vector()
-    for(sheet in c(2:3))
+    if(sum(sheets == 1))
     {
-        # using read_excel method from readxl package
         x <- readxl::read_excel(path  = fname
-                               ,sheet = sheet
-                               ,skip  = 1 # skip first row
+                               ,sheet = sheets
+                               ,skip  = lines_to_skip
                                )
-        # if requested,
-        # to each nutrient name, append the corresponding unit 
-        # (e.g., Ca++(mg/l))
-        newnames <- names(x)[3:dim(x)[2]]
-        # vector of units
-        if(show_units){
-            units <- c(units,x[2,-c(1,2)])
-            #newnames <- paste0(newnames,"(",units,")")
-        }
-        
-        names(x)[3:dim(x)[2]] <- newnames
-        
-        if(sheet < 3)
+    } else {
+        for(sheet in c(2:3))
         {
-            df <- x
-        } else {
-            df <- cbind(df,x[,-1])
-        }
-    } # sheet loop end here
-    
-    # adjust order, such that cacti IDs are next to each other
-    ids <- grep(pattern = "ID", x = names(df))
-    selection <- seq(from = 2, to = length(colnames(df)), by = 1)
-    selection <- selection[!selection %in% ids] 
-    df <- df[,c(1,ids,selection)]
-
-    # drop unnecessary rows and columns
-    df <- df[-c(1:3),]
-    # grant that measurements are in numeric format
-    df[,4:dim(df)[2]] <- unlist(lapply(X = df[,4:dim(df)[2]]
-                                      ,FUN = as.numeric
-                                      )
+            # using read_excel method from readxl package
+            x <- readxl::read_excel(path  = fname
+                               ,sheet = sheet
+                               ,skip  = lines_to_skip
                                )
-    # remove punctuation characters and spaces from variable names
-    names(df) <- gsub(pattern = " ", replacement = ""
-                     ,x = names(df)
-                     )
-    names(df) <- gsub(pattern = "[[:punct:]]"
-                     ,replacement = ""
-                     ,x = names(df)
-                     )
-    # adjust phosphates names
-    names(df) <- sub(pattern = "Fosfatos", replacement = "", x = names(df))
-    names(df) <- sub(pattern = "Ptotal",    replacement = "TP", x = names(df))
-
-    # show units along the names
-    if(show_units)
-      names(df)[-c(1:3)] <- paste0(names(df)[-c(1:3)],"(",units,")")
-
-    # remove un/filtered tag from site ID and order data rows by id
-    # then, change "Muestra" colname by "USID" to match the identifier
-    # used in kobo
-    df$Muestra <- get_siteID(df)
-    df <- df[order(df$Muestra),]
-    names(df)[1] <- "USID"
+            if(sheet < 3)
+            {
+                df <- x
+            } else {
+                df <- cbind(df,x[,-1])
+            }
+        }
+        x <- df
+    }
     
+    # remove columns with unname data
+    # readxl assigns dots and numbers to unname data
+    # thus, 1st remove the dots, then the column names with a number
+    # as name 
+    selection <- sub(pattern = "\\...",replacement = "",x = names(x))
+    selection <- which(!is.na(as.numeric(selection)))
+    if(length(selection) > 0)
+        x <- x[, -selection]
+
+    # identify and fix the USDI to match funaction site identifier
+    if(sum(sheets == 1))
+    {
+        names(x)[names(x) == "REF"] <- "USID"
+        # remove unnecesary rows
+        x <- x[-c(1:2),]
+    }
+            
+    if(sum(sheets == c(2,3)) > 1)
+    {
+        names(x)[names(x) == "Muestra"] <- "USID"
+        # remove unnecesary rows
+        x <- x[-(1:3),]
+    }
+            
+    # remove unnecessary columns
+    selection <- grep("solic|muest|most|cacti", tolower(names(x)))
+    x <- x[, -selection]
+    # fix the USID
+    usid <- x$USID
+    if(sum(sheets == 1) && sum(grepl("VA|TP", usid)) > 0)
+    { # Italy
+        selection <- usid[grep("VA|TP", usid)]
+        selection <- which(nchar(selection) > 6)
+        usid[selection] <- sub("0", "", usid[selection])
+    }
+    if(sum(sheets == c(2,3)) && sum(grepl("TI|EN", usid)) > 0)
+    { # Switzerland
+        # remove records not related to TI or ENG
+        # e.g., ZHCF1
+        selection <- grep("TI|EN", usid)
+        x <- x[selection,]
+        usid <- usid[selection]
+        # fix usid
+        # T1 results have different cacti id names than new ones
+        if(sum(grep("EN", usid)) > 0)
+        {
+            usid <- sub("_CF", "", usid)
+        } else {
+            usid <- sub("CF", "T", usid)
+            usid <- sub("-","", usid)
+        }
+    }
+    x$USID <- usid
+    # end of fix the USID
+
+    # fix variable names
+    names(x)[-1] <- fix_varnames(names(x)[-1])
+    # grant that all data will follow the same order
+    foo <- x[,-1][,order(names(x[-1]))]
+    x[,-1] <- foo
+    names(x)[-1] <- names(foo)
+
+    # add units, if requested, based on agreement on colnames
+    # see chemistry_colnames.csv
+    if(show_units)
+        names(x)[-1] <- append_units(names(x)[-1]) 
+    
+    # make sure that chemistry variables are of numeric type
+    x[,-1] <- as.data.frame(sapply(x[,-1], as.numeric))
+
+    # adjust precision (as reported by cacti)
+    for (var in names(x)[-1])
+    {
+        precision <- get_precision(var)
+        if(precision)
+            x[, var] <- round(x = x[, var], digits = precision)
+    }
+    
+    # adjust order based on USID
+    x <- x[order(x$USID),]
+    
+    # catch repeated ids
+    if(length(unique(x$USID)) != dim(x)[1]){
+        y <- table(x$USID)
+        warning(paste0("duplicate USID: ", names(y)[y > 1])
+               ,immediate. = TRUE
+               )
+    }
+
     # return prepared cacti data frame
-     return(df)
+     return(x)
 }
 ###############################################################
 #' get_siteID
@@ -207,3 +264,131 @@ get_siteID <- function(df)
 
 
 
+###############################################################
+#' fix_varnames
+#'
+#' DESCRIPTION
+#' standardization of variable names
+#'
+#' PARAMETERS
+#' @param x vector of current names
+#'
+#' OUTPUT
+#' @return new simplified names
+#'
+fix_varnames <- function(x)
+{
+    x[grep("Ca|Cal|cal", x)] <- "Ca"
+    x[grep("K|Pot|pot", x)] <- "K"
+    x[grep("Mg|Mag|mag", x)] <- "Mg"
+    x[grep("Na|Sod|sod", x)] <- "Na"
+    x[grep("NO2|nitri|Nitri", x)] <- "NO2"
+    x[grep("PO4|Fosfa|fosfa", x)] <- "PO4"
+    x[grep("NH4|Amon|amon", x)] <- "NH4"
+    x[grep("F|Flu|flu", x)] <- "F"
+    x[grep("Cl|Clo|clo", x)] <- "Cl"
+    x[grep("NO3|Nitra|nitra", x)] <- "NO3"
+    x[grep("SO4|Sulfa|sulfa", x)] <- "SO4"
+    x[grep("TP|PT|P to", x)] <- "TP"
+    selection <- which(nchar(x) < 2)
+    x[selection][grep("P", x[selection])] <- "TP"
+    x[grep("TOC", x)] <- "TOC"
+    x[grep("TIC|IC", x)] <- "TIC"
+    x[grep("TC", x)] <- "TC"
+    x[grep("TN", x)] <- "TN"
+
+    return(x)
+}
+
+
+
+###############################################################
+#' append_units
+#'
+#' DESCRIPTION
+#' append units to variable names
+#'
+#' PARAMETERS
+#' @param x vector of current names
+#'
+#' OUTPUT
+#' @return variable names with units
+#'
+append_units <- function(x)
+{
+    return (
+            c("Ca(mg/l)"
+             ,"Cl(mg/l)"
+             ,"F(mg/l)"
+             ,"K(mg/l)"
+             ,"Mg(mg/l)"
+             ,"Na(mg/l)"
+             ,"NH4(µg/l)"
+             ,"NO2(µg/l)"
+             ,"NO3(mg/l)"
+             ,"PO4(µg/l)"
+             ,"SO4(mg/l)"
+             ,"TC(mg/l)"
+             ,"TIC(mg/l)"
+             ,"TN(mg/l)"
+             ,"TOC(mg/l)"
+             ,"TP(mg/l)"
+            )
+        )  
+}
+
+
+
+###############################################################
+#' get_precision
+#'
+#' DESCRIPTION
+#' report the corresponding precision to the variable of
+#' interest
+#'
+#' PARAMETERS
+#' @param x target variable
+#'
+#' OUTPUT
+#' @return precision of target variable
+#'
+get_precision <- function(x)
+{
+    precision <- c(
+              3 # "Ca(mg/l)""
+             ,2 # "Cl(mg/l)"
+             ,2 # "F(mg/l)"
+             ,3 # "K(mg/l)"
+             ,3 # "Mg(mg/l)"
+             ,3 # "Na(mg/l)"
+             ,2 # "NH4(µg/l)"
+             ,2 # "NO2(µg/l)"
+             ,2 # "NO3(mg/l)"
+             ,2 # "PO4(µg/l)"
+             ,2 # "SO4(mg/l)"
+             ,2 # "TC(mg/l)"
+             ,2 # "TIC(mg/l)"
+             ,2 # "TN(mg/l)"
+             ,2 # "TOC(mg/l)"
+             ,3 # "TP(mg/l)"
+            )
+    var_list <- c("Ca(mg/l)"
+             ,"Cl(mg/l)"
+             ,"F(mg/l)"
+             ,"K(mg/l)"
+             ,"Mg(mg/l)"
+             ,"Na(mg/l)"
+             ,"NH4(µg/l)"
+             ,"NO2(µg/l)"
+             ,"NO3(mg/l)"
+             ,"PO4(µg/l)"
+             ,"SO4(mg/l)"
+             ,"TC(mg/l)"
+             ,"TIC(mg/l)"
+             ,"TN(mg/l)"
+             ,"TOC(mg/l)"
+             ,"TP(mg/l)"
+            )
+    var <- grep(x, var_list)
+    return (precision[var])
+}
