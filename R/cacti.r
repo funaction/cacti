@@ -12,7 +12,7 @@
 # author:       Daniel Romero Mujalli
 # email:        daniel.romero@supsi.ch
 #
-# last update:  20250401
+# last update:  20250402
 #######################################################################
 ###############################################################
 #' crt_cacti_request
@@ -233,7 +233,7 @@ read_cacti <- function(fname
     # catch repeated ids
     if(length(unique(x$USID)) != dim(x)[1]){
         y <- table(x$USID)
-        warning(paste0("duplicate USID: ", names(y)[y > 1])
+        warning(paste0("repeated USID: ", names(y)[y > 1])
                ,immediate. = TRUE
                )
     }
