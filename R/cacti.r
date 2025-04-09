@@ -125,25 +125,40 @@ read_cacti <- function(fname
 {
     # CACTI data has the chemistry results on sheets 2 and 3 of
     # the excel file
-    if(sum(sheets == 1))
+    if(length(sheets) < 2)
     {
         x <- readxl::read_excel(path  = fname
                                ,sheet = sheets
                                ,skip  = lines_to_skip
                                )
     } else {
-        for(sheet in c(2:3))
+        for(sheet in sheets)
         {
             # using read_excel method from readxl package
             x <- readxl::read_excel(path  = fname
                                ,sheet = sheet
                                ,skip  = lines_to_skip
                                )
-            if(sheet < 3)
+            if(sheet == sheets[1])
             {
                 df <- x
             } else {
+                # if for some reason, row numbers in different sheets
+                # differ, then adjust that now
+                # e.g., due to sample loss
+                if(nrow(df) > nrow(x))
+                {
+                    dummy <- matrix(NA,nrow = nrow(df) - nrow(x)
+                                   ,ncol = dim(x)[2]
+                                   )
+                    dummy <- as.data.frame(dummy)
+                    names(dummy) <- names(x)
+                    x <- rbind(x,dummy)
+                }
+                
                 df <- cbind(df,x[,-1])
+                   
+                
             }
         }
         x <- df
@@ -159,7 +174,7 @@ read_cacti <- function(fname
         x <- x[, -selection]
 
     # identify and fix the USDI to match funaction site identifier
-    if(sum(sheets == 1))
+    if(length(sheets) < 2)
     {
         usid_name <- names(x)[names(x) %in% c("REF", "Muestra")]
         if(length(usid_name) > 1)
@@ -176,11 +191,15 @@ read_cacti <- function(fname
         x <- x[-c(1:2),]
     }
             
-    if(sum(sheets == c(2,3)) > 1)
+    if(length(sheets) > 1)
     {
+        names(x)[names(x) == "code"] <- "Muestra"
         names(x)[names(x) == "Muestra"] <- "USID"
         # remove unnecesary rows
-        x <- x[-(1:3),]
+        if(sum(sheets == c(2,3)))
+            x <- x[-(1:3),]
+        if(sum(sheets == c(1,2)) == 2) # a case with Estonia data
+            x <- x[-(1:2),]
     }
             
     # remove unnecessary columns
@@ -194,7 +213,7 @@ read_cacti <- function(fname
         selection <- which(nchar(selection) > 6)
         usid[selection] <- sub("0", "", usid[selection])
     }
-    if(sum(sheets == c(2,3)) && sum(grepl("TI|EN", usid)) > 0)
+    if(length(sheets) > 1 && sum(grepl("TI|EN", usid)) > 0)
     { # Switzerland
         # remove records not related to TI or ENG
         # e.g., ZHCF1
@@ -214,6 +233,12 @@ read_cacti <- function(fname
     # standardize USID by removing special characters
     usid <- gsub("_","",usid)
 
+    if(sum(sheets == c(1,2)) == 2) # fix Estonia ids
+    {
+        usid <- gsub(" ", "", usid)
+        usid <- sub("^\\d+", "", usid)
+    }
+
     x$USID <- usid
     # end of fix the USID
 
@@ -223,6 +248,11 @@ read_cacti <- function(fname
     foo <- x[,-1][,order(names(x[-1]))]
     x[,-1] <- foo
     names(x)[-1] <- names(foo)
+
+    # remove repeated parameter measurements
+    # Estonia dataset
+    if(sum(sheets == c(1,2)) == 2) # a case with Estonia data
+        x <- x[, !names(x) %in% "TOC.1"]
 
     # add units, if requested, based on agreement on colnames
     # see chemistry_colnames.csv
