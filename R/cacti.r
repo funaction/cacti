@@ -161,7 +161,17 @@ read_cacti <- function(fname
     # identify and fix the USDI to match funaction site identifier
     if(sum(sheets == 1))
     {
-        names(x)[names(x) == "REF"] <- "USID"
+        usid_name <- names(x)[names(x) %in% c("REF", "Muestra")]
+        if(length(usid_name) > 1)
+        {
+            # find the correct usid based on the number of caracters
+            index <- which(nchar(x[,usid_name]) == max(nchar(x[,usid_name])))
+            names(x)[names(x) %in% usid_name[index]] <- "USID"
+
+        } else {
+            names(x)[names(x) %in% c("REF", "Muestra")] <- "USID"
+        }
+        
         # remove unnecesary rows
         x <- x[-c(1:2),]
     }
@@ -174,7 +184,7 @@ read_cacti <- function(fname
     }
             
     # remove unnecessary columns
-    selection <- grep("solic|muest|most|cacti", tolower(names(x)))
+    selection <- grep("solic|muest|most|cacti|nº", tolower(names(x)))
     x <- x[, -selection]
     # fix the USID
     usid <- x$USID
@@ -201,6 +211,9 @@ read_cacti <- function(fname
             usid <- sub("-","", usid)
         }
     }
+    # standardize USID by removing special characters
+    usid <- gsub("_","",usid)
+
     x$USID <- usid
     # end of fix the USID
 
@@ -215,7 +228,10 @@ read_cacti <- function(fname
     # see chemistry_colnames.csv
     if(show_units)
         names(x)[-1] <- append_units(names(x)[-1]) 
-    
+
+    # replace values indicated by "<" with zeros
+    x[] <- lapply(x, sub, pattern = "<", replacement = 0)
+
     # make sure that chemistry variables are of numeric type
     x[,-1] <- as.data.frame(sapply(x[,-1], as.numeric))
 
