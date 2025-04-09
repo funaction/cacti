@@ -1,0 +1,17 @@
+variable,precision,loq
+Ca(mg/l),3,0.03
+Cl(mg/l),2,0.1
+F(mg/l),2,0.12
+K(mg/l),3,0.05
+Mg(mg/l),3,0.02
+Na(mg/l),3,0.05
+NH4(µg/l),2,0.07
+NO2(µg/l),2,0.08
+NO3(mg/l),2,0.08
+PO4(µg/l),2,0.03
+SO4(mg/l),2,0.08
+TC(mg/l),2,0.1
+TIC(mg/l),2,0.1
+TN(mg/l),2,0.1
+TOC(mg/l),2,0.1
+TP(mg/l),3,0.01
