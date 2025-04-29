@@ -4,12 +4,22 @@
 \alias{read_cacti}
 \title{read_cacti}
 \usage{
-read_cacti(fname, show_units = FALSE, lines_to_skip = 1, sheets = c(2, 3))
+read_cacti(
+  fname,
+  show_units = FALSE,
+  use_cacti_precision = FALSE,
+  lines_to_skip = 1,
+  sheets = c(2, 3)
+)
 }
 \arguments{
 \item{fname}{the original path/filename *.xlsx cacti data}
 
 \item{show_units}{show measurement units along variable names
+DEFAULT FALSE}
+
+\item{use_cacti_precision}{report results using cacti decimal
+precision
 DEFAULT FALSE}
 
 \item{lines_to_skip}{skip this many lines when reading the

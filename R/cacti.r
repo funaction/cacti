@@ -12,7 +12,7 @@
 # author:       Daniel Romero Mujalli
 # email:        daniel.romero@supsi.ch
 #
-# last update:  20250409
+# last update:  20250429
 #######################################################################
 ###############################################################
 #' crt_cacti_request
@@ -106,6 +106,10 @@ crt_cacti_request <- function(funaction_df
 #' @param show_units show measurement units along variable names
 #' DEFAULT FALSE
 #'
+#' @param use_cacti_precision report results using cacti decimal
+#' precision
+#' DEFAULT FALSE
+#'
 #' @param lines_to_skip skip this many lines when reading the 
 #' file
 #' DEFAULT 1
@@ -119,6 +123,7 @@ crt_cacti_request <- function(funaction_df
 #' @export
 read_cacti <- function(fname
                       ,show_units = FALSE
+                      ,use_cacti_precision = FALSE
                       ,lines_to_skip = 1
                       ,sheets = c(2,3)
                       )
@@ -237,6 +242,23 @@ read_cacti <- function(fname
     {
         usid <- gsub(" ", "", usid)
         usid <- sub("^\\d+", "", usid)
+        # it seems that names with "CF" belong to T1
+        # thus, using regexpr() and substr() to find
+        # and remove characters after CF. Then,
+        # sub() to replace CF by T1
+        selection <- grep(pattern = "CF", x = usid)
+        index <- regexpr(pattern = "F", text = usid[selection])
+        index <- indx[1:length(indx)]
+        usid[selection] <- substr(x = usid[selection]
+                                 ,start = 1
+                                 ,stop = index
+                                 )
+        usid <- sub(pattern = "CF", replacement = "T1"
+                   ,x = usid
+                   )
+        
+        # remove the chacter "C" from usid
+        usid <- sub("C","",usid)
     }
 
     x$USID <- usid
@@ -266,12 +288,13 @@ read_cacti <- function(fname
     x[,-1] <- as.data.frame(sapply(x[,-1], as.numeric))
 
     # adjust precision (as reported by cacti)
-    for (var in names(x)[-1])
-    {
-        precision <- get_precision(var)
-        if(precision)
-            x[, var] <- round(x = x[, var], digits = precision)
-    }
+    if(use_cacti_precision)
+        for (var in names(x)[-1])
+        {
+            precision <- get_precision(var)
+            if(precision)
+                x[, var] <- round(x = x[, var], digits = precision)
+        }
     
     # adjust order based on USID
     x <- x[order(x$USID),]
