@@ -307,6 +307,18 @@ read_cacti <- function(fname
                )
     }
 
+    # remove C1 / C2 chemistry code from USID if still present
+    # at the end of the name string USID code
+    usid <- x$USID
+    #selection <- grep(pattern = "C1|C2", x = usid)
+    index <- regexpr(pattern = "C1|C2", text = usid)
+    index <- index[1:length(index)]
+    ids <- usid[index + 1 == nchar(usid)]
+    usid[usid %in% ids] <- substr(x = usid[usid %in% ids],
+                              start = 1,
+                              stop = index - 1
+                             )
+
     # return prepared cacti data frame
      return(x)
 }
