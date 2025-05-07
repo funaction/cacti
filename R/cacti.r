@@ -318,7 +318,7 @@ read_cacti <- function(fname
                               start = 1,
                               stop = index - 1
                              )
-
+    x$USID <- usid
     # return prepared cacti data frame
      return(x)
 }
