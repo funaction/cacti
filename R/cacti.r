@@ -12,7 +12,7 @@
 # author:       Daniel Romero Mujalli
 # email:        daniel.romero@supsi.ch
 #
-# last update:  20250429
+# last update:  20250507
 #######################################################################
 ###############################################################
 #' crt_cacti_request
@@ -248,7 +248,7 @@ read_cacti <- function(fname
         # sub() to replace CF by T1
         selection <- grep(pattern = "CF", x = usid)
         index <- regexpr(pattern = "F", text = usid[selection])
-        index <- indx[1:length(indx)]
+        index <- index[1:length(index)]
         usid[selection] <- substr(x = usid[selection]
                                  ,start = 1
                                  ,stop = index
