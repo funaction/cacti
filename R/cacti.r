@@ -12,7 +12,7 @@
 # author:       Daniel Romero Mujalli
 # email:        daniel.romero@supsi.ch
 #
-# last update:  20250507
+# last update:  20250623
 #######################################################################
 ###############################################################
 #' crt_cacti_request
@@ -319,6 +319,20 @@ read_cacti <- function(fname
                               stop = index - 1
                              )
     x$USID <- usid
+    
+    # apply decision regarding the limits of detection LOD and of 
+    # quantification LOQ:
+    # it consist on using a constant value for all values below
+    # the LOQ. They will have high uncertainty anyway, and it is
+    # recommended to avoid absolute zero.
+    # the decision is to use loq / 2
+    for(var in names(x)){
+        loq <- getLOQ(var)
+        if(length(var) > 0)
+            x[,var][x[,var] < loq] <- loq / 2
+    }
+
+    
     # return prepared cacti data frame
      return(x)
 }
@@ -424,7 +438,7 @@ append_units <- function(x)
 #' get_precision
 #'
 #' DESCRIPTION
-#' report the corresponding precision to the variable of
+#' report the corresponding precision of the variable of
 #' interest
 #'
 #' PARAMETERS
@@ -436,40 +450,98 @@ append_units <- function(x)
 get_precision <- function(x)
 {
     precision <- c(
-              3 # "Ca(mg/l)""
-             ,2 # "Cl(mg/l)"
-             ,2 # "F(mg/l)"
-             ,3 # "K(mg/l)"
-             ,3 # "Mg(mg/l)"
-             ,3 # "Na(mg/l)"
-             ,2 # "NH4(µg/l)"
-             ,2 # "NO2(µg/l)"
-             ,2 # "NO3(mg/l)"
-             ,2 # "PO4(µg/l)"
-             ,2 # "SO4(mg/l)"
-             ,2 # "TC(mg/l)"
-             ,2 # "TIC(mg/l)"
-             ,2 # "TN(mg/l)"
-             ,2 # "TOC(mg/l)"
-             ,3 # "TP(mg/l)"
-            )
-    var_list <- c("Ca(mg/l)"
-             ,"Cl(mg/l)"
-             ,"F(mg/l)"
-             ,"K(mg/l)"
-             ,"Mg(mg/l)"
-             ,"Na(mg/l)"
-             ,"NH4(µg/l)"
-             ,"NO2(µg/l)"
-             ,"NO3(mg/l)"
-             ,"PO4(µg/l)"
-             ,"SO4(mg/l)"
-             ,"TC(mg/l)"
-             ,"TIC(mg/l)"
-             ,"TN(mg/l)"
-             ,"TOC(mg/l)"
-             ,"TP(mg/l)"
-            )
+        3, # "Ca(mg/l)""
+        2, # "Cl(mg/l)"
+        2, # "F(mg/l)"
+        3, # "K(mg/l)"
+        3, # "Mg(mg/l)"
+        3, # "Na(mg/l)"
+        2, # "NH4(µg/l)"
+        2, # "NO2(µg/l)"
+        2, # "NO3(mg/l)"
+        2, # "PO4(µg/l)"
+        2, # "SO4(mg/l)"
+        2, # "TC(mg/l)"
+        2, # "TIC(mg/l)"
+        2, # "TN(mg/l)"
+        2, # "TOC(mg/l)"
+        3 # "TP(mg/l)"
+    )
+    var_list <- c(
+        "Ca(mg/l)",
+        "Cl(mg/l)",
+        "F(mg/l)",
+        "K(mg/l)",
+        "Mg(mg/l)",
+        "Na(mg/l)",
+        "NH4(µg/l)",
+        "NO2(µg/l)",
+        "NO3(mg/l)",
+        "PO4(µg/l)",
+        "SO4(mg/l)",
+        "TC(mg/l)",
+        "TIC(mg/l)",
+        "TN(mg/l)",
+        "TOC(mg/l)",
+        "TP(mg/l)"
+    )
     var <- grep(x, var_list)
     return (precision[var])
+}
+
+
+
+###############################################################
+#' getLOQ
+#'
+#' DESCRIPTION
+#' report the corresponding limit of quantification LOQ of the 
+#' variable of interest
+#'
+#' PARAMETERS
+#' @param x target variable
+#'
+#' OUTPUT
+#' @return precision of target variable
+#'
+getLOQ <- function(x)
+{
+    loq <- c(
+        0.03, # "Ca(mg/l)""
+        0.1, # "Cl(mg/l)"
+        0.12, # "F(mg/l)"
+        0.05, # "K(mg/l)"
+        0.02, # "Mg(mg/l)"
+        0.05, # "Na(mg/l)"
+        0.07, # "NH4(µg/l)"
+        0.08, # "NO2(µg/l)"
+        0.08, # "NO3(mg/l)"
+        0.03, # "PO4(µg/l)"
+        0.08, # "SO4(mg/l)"
+        0.1, # "TC(mg/l)"
+        0.1, # "TIC(mg/l)"
+        0.1, # "TN(mg/l)"
+        0.1, # "TOC(mg/l)"
+        0.01 # "TP(mg/l)"
+    )
+    var_list <- c(
+        "Ca(mg/l)",
+        "Cl(mg/l)",
+        "F(mg/l)",
+        "K(mg/l)",
+        "Mg(mg/l)",
+        "Na(mg/l)",
+        "NH4(µg/l)",
+        "NO2(µg/l)",
+        "NO3(mg/l)",
+        "PO4(µg/l)",
+        "SO4(mg/l)",
+        "TC(mg/l)",
+        "TIC(mg/l)",
+        "TN(mg/l)",
+        "TOC(mg/l)",
+        "TP(mg/l)"
+    )
+    var <- grep(x, var_list)
+    return (loq[var])
 }
