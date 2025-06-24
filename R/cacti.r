@@ -320,6 +320,14 @@ read_cacti <- function(fname
                              )
     x$USID <- usid
     
+    # remove cacti test measurements (affects one file only)
+    if(grepl("1786", fname)){
+        selection <- which(sapply(X = x[,-1], FUN = sum) == 0)[1:2]
+        selection <- selection + 1 # plus the first char column
+        x <- x[,-selection]
+    }
+    
+
     # apply decision regarding the limits of detection LOD and of 
     # quantification LOQ:
     # it consist on using a constant value for all values below
