@@ -328,8 +328,10 @@ read_cacti <- function(fname
     # the decision is to use loq / 2
     for(var in names(x)){
         loq <- getLOQ(var)
+        dummy <- x[,var]
         if(length(loq) > 0)
-            x[,var][x[,var] < loq] <- loq / 2
+            dummy[dummy < loq] <- loq / 2
+        x[, var] <- dummy
     }
 
     
