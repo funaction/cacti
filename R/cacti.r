@@ -12,7 +12,7 @@
 # author:       Daniel Romero Mujalli
 # email:        daniel.romero@supsi.ch
 #
-# last update:  20250623
+# last update:  20250624
 #######################################################################
 ###############################################################
 #' crt_cacti_request
@@ -328,7 +328,7 @@ read_cacti <- function(fname
     # the decision is to use loq / 2
     for(var in names(x)){
         loq <- getLOQ(var)
-        if(length(var) > 0)
+        if(length(loq) > 0)
             x[,var][x[,var] < loq] <- loq / 2
     }
 
