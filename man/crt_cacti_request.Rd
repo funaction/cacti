@@ -15,23 +15,29 @@ crt_cacti_request(
 )
 }
 \arguments{
-\item{funaction_df}{funaction kobo csv data}
+\item{funaction_df}{\link{character} funaction kobo csv data}
 
-\item{country}{full name, e.g., "Switzerland"}
+\item{country}{\link{character} full name, e.g., "Switzerland"}
 
-\item{cacti_data}{chemistry results received from cacti (if any)
+\item{cacti_data}{\link{dataframe} chemistry results received from
+cacti (if any)
 Default 0}
 
-\item{volume}{approx. volume of the water samples (in ml)
+\item{volume}{\link{numeric} approx. volume of the water samples
+(in ml)
 Default 40}
 
-\item{tag_unfiltered}{tag used to identify unfiltered samples
+\item{tag_unfiltered}{\link{character} tag used to identify
+unfiltered samples
 Default "_C1"}
 
-\item{tag_filtered}{tag used to identify filtered samples
+\item{tag_filtered}{\link{character} tag used to identify
+filtered samples
 Default "_C2"}
 
-\item{outfname}{name of the output file (path/filename)
+\item{outfname}{\link{character} name of the output file
+(path/filename)
+Default "cacti_request.csv"
 
 OUTPUT}
 }

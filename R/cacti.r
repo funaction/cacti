@@ -1,4 +1,4 @@
-######################################################################
+###############################################################
 #
 #                           CACTI FUNCTIONS
 #                   
@@ -12,8 +12,8 @@
 # author:       Daniel Romero Mujalli
 # email:        daniel.romero@supsi.ch
 #
-# last update:  20250624
-#######################################################################
+# last update:  20250630
+###############################################################
 ###############################################################
 #' crt_cacti_request
 #'
@@ -21,36 +21,43 @@
 #' create a csv file to request chemistry analyses
 #'
 #' PARAMETERS
-#' @param funaction_df funaction kobo csv data
+#' @param funaction_df [character] funaction kobo csv data
 #'
-#' @param country full name, e.g., "Switzerland"
+#' @param country [character] full name, e.g., "Switzerland"
 #'
-#' @param cacti_data chemistry results received from cacti (if any)
+#' @param cacti_data [dataframe] chemistry results received from
+#' cacti (if any)
 #' Default 0
 #'
-#' @param volume  approx. volume of the water samples (in ml)
+#' @param volume  [numeric] approx. volume of the water samples
+#' (in ml)
 #' Default 40
 #'
-#' @param tag_unfiltered tag used to identify unfiltered samples
+#' @param tag_unfiltered [character] tag used to identify
+#' unfiltered samples
 #' Default "_C1"
 #'
-#' @param tag_filtered tag used to identify filtered samples
+#' @param tag_filtered [character] tag used to identify
+#' filtered samples
 #' Default "_C2"
 #'
-#' @param outfname name of the output file (path/filename)
+#' @param outfname [character] name of the output file
+#' (path/filename)
+#' Default "cacti_request.csv"
 #'
 #' OUTPUT
 #' @return message with filepath and filename
 #'
 #' @export
-crt_cacti_request <- function(funaction_df
-                             ,country  
-                             ,cacti_data = 0 
-                             ,volume = 40
-                             ,tag_unfiltered = "_C1"
-                             ,tag_filtered   = "_C2"
-                             ,outfname = "cacti_request.csv"
-                             )
+crt_cacti_request <- function(
+    funaction_df,
+    country,
+    cacti_data = 0,
+    volume = 40,
+    tag_unfiltered = "_C1",
+    tag_filtered   = "_C2",
+    outfname = "cacti_request.csv"
+)
 {
     # select the samples in need of chemistry analysis
     id <- unique(funaction_df$USID[funaction_df$Country == country])
@@ -101,33 +108,51 @@ crt_cacti_request <- function(funaction_df
 #' read, prepare and clean cacti data
 #'
 #' PARAMETERS
-#' @param fname the original path/filename *.xlsx cacti data
+#' @param fname [character] the original path/filename *.xlsx
+#' cacti data
 #'
-#' @param show_units show measurement units along variable names
+#' @param show_units [boolean] show measurement units along
+#' variable names
 #' DEFAULT FALSE
 #'
-#' @param use_cacti_precision report results using cacti decimal
-#' precision
+#' @param use_cacti_precision [boolean] report results using
+#' cacti decimal precision
 #' DEFAULT FALSE
 #'
-#' @param lines_to_skip skip this many lines when reading the 
-#' file
+#' @param lines_to_skip [integer] skip this many lines when 
+#' reading the file
 #' DEFAULT 1
 #'
-#' @param sheets from which sheets to read
+#' @param sheets [numeric vector] from which sheets to read
 #' DEFAULT c(2,3)
+#'
+#' @param treat_loq [character] method to deal with values below
+#' the limit of quantification LOQ. Currently, two methods are
+#' supported:
+#' (i)  "loq/2" values less than LOQ are divided by two
+#' (ii) "I(loq)" (DEFAULT) applies identity function to values
+#'      below LOQ. If values fall below the limit of detection,
+#       then converts the value to a constant = LOD/2
+#' DEFAULT 
 #'
 #' OUTPUT
 #' @return dataframe, cleaned cacti data
 #'
 #' @export
-read_cacti <- function(fname
-                      ,show_units = FALSE
-                      ,use_cacti_precision = FALSE
-                      ,lines_to_skip = 1
-                      ,sheets = c(2,3)
-                      )
+read_cacti <- function(
+    fname,show_units = FALSE,
+    use_cacti_precision = FALSE,
+    lines_to_skip = 1,
+    sheets = c(2,3),
+    treat_loq = "I(loq)"
+)
 {
+    # drop a warning if the selected method to treat the LOQ does
+    # not exist
+    methods_to_treat_loq <- c("loq/2", "I(loq)")
+    if(!treat_loq %in% methods_to_treat_loq)
+        warning("method to treat_loq not valid!")
+    
     # CACTI data has the chemistry results on sheets 2 and 3 of
     # the excel file
     if(length(sheets) < 2)
@@ -338,7 +363,14 @@ read_cacti <- function(fname
         loq <- getLOQ(var)
         dummy <- x[,var]
         if(length(loq) > 0)
-            dummy[dummy < loq] <- loq / 2
+        {
+            if(treat_loq == "loq/2")
+                dummy[dummy < loq] <- loq / 2
+            # LOD = LOQ / 3
+            if(treat_loq == "I(loq)")
+                dummy[dummy < loq / 3] <- loq / 5
+        }
+            
         x[, var] <- dummy
     }
 
@@ -353,7 +385,8 @@ read_cacti <- function(fname
 #' extract unique site ID from cleaned cacti dataframe
 #'
 #' PARAMETERS
-#' @param df cleaned cacti dataframe (see read_cacti function)
+#' @param df [dataframe] cleaned cacti dataframe (see read_cacti 
+#' function)
 #'
 #' OUTPUT
 #' @return vector with site IDs

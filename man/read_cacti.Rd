@@ -9,25 +9,36 @@ read_cacti(
   show_units = FALSE,
   use_cacti_precision = FALSE,
   lines_to_skip = 1,
-  sheets = c(2, 3)
+  sheets = c(2, 3),
+  treat_loq = "I(loq)"
 )
 }
 \arguments{
-\item{fname}{the original path/filename *.xlsx cacti data}
+\item{fname}{\link{character} the original path/filename *.xlsx
+cacti data}
 
-\item{show_units}{show measurement units along variable names
+\item{show_units}{\link{boolean} show measurement units along
+variable names
 DEFAULT FALSE}
 
-\item{use_cacti_precision}{report results using cacti decimal
-precision
+\item{use_cacti_precision}{\link{boolean} report results using
+cacti decimal precision
 DEFAULT FALSE}
 
-\item{lines_to_skip}{skip this many lines when reading the
-file
+\item{lines_to_skip}{\link{integer} skip this many lines when
+reading the file
 DEFAULT 1}
 
-\item{sheets}{from which sheets to read
-DEFAULT c(2,3)
+\item{sheets}{\link{numeric vector} from which sheets to read
+DEFAULT c(2,3)}
+
+\item{treat_loq}{\link{character} method to deal with values below
+the limit of quantification LOQ. Currently, two methods are
+supported:
+(i)  "loq/2" values less than LOQ are divided by two
+(ii) "I(loq)" (DEFAULT) applies identity function to values
+below LOQ. If values fall below the limit of detection,
+DEFAULT
 
 OUTPUT}
 }
