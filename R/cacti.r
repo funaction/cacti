@@ -354,10 +354,7 @@ read_cacti <- function(
     
     # take the absolute value of negative values. CACTI tags
     # using the negative sign, values below the LOD
-    x[,-1] <- lapply(x[,-1], function(x){
-        x[!is.na(x)]
-    }
-    )
+    x[,-1] <- lapply(x[,-1], abs)
 
     # apply decision regarding the limits of detection LOD and of 
     # quantification LOQ:
