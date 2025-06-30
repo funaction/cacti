@@ -309,10 +309,6 @@ read_cacti <- function(
     # replace values indicated by "<" with zeros
     x[] <- lapply(x, sub, pattern = "<", replacement = 0)
 
-    # take the absolute value of negative values. CACTI tags
-    # using the negative sign, values below the LOD
-    x[,-1] <- lapply(x[,-1], abs)
-
     # make sure that chemistry variables are of numeric type
     x[,-1] <- as.data.frame(sapply(x[,-1], as.numeric))
 
@@ -356,6 +352,12 @@ read_cacti <- function(
         x <- x[,-selection]
     }
     
+    # take the absolute value of negative values. CACTI tags
+    # using the negative sign, values below the LOD
+    x[,-1] <- lapply(x[,-1], function(x){
+        x[!is.na(x)]
+    }
+    )
 
     # apply decision regarding the limits of detection LOD and of 
     # quantification LOQ:
