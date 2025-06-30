@@ -309,6 +309,10 @@ read_cacti <- function(
     # replace values indicated by "<" with zeros
     x[] <- lapply(x, sub, pattern = "<", replacement = 0)
 
+    # take the absolute value of negative values. CACTI tags
+    # using the negative sign, values below the LOD
+    x[] <- lapply(x, abs)
+
     # make sure that chemistry variables are of numeric type
     x[,-1] <- as.data.frame(sapply(x[,-1], as.numeric))
 
